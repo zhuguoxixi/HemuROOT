@@ -1,0 +1,37 @@
+{
+TH1F HiggsPar("Events","Parameter for Higgs distribution",200,-0.2,0.2);
+TH1F BackPar("Events","Parameter for background distribution",50,0.95,1.05);
+TH1F HiggsErr("Events","Error for Higgs distribution",80,8.0e-02,5.4e-02);
+TH1F BackErr("Events","Error for background distribution",50,1.92e-03,1.925e-03);
+for(int t=0;t<1;t++){
+//luminosity 139. and 439. TeV for 13 TeV; 300., 1000., 2000., 3000. for 14 TeV
+//for 13 TeV
+TF1 *bk = new TF1("bk","(300./139.)*((x^2)/250-5.87*x+1027)",110.,160.);
+// for 14 TeV
+//TF1 *bk = new TF1("bk","(300./139.)*((13./14.)^3*(x^2)/250-5.06*x+953.64)",110.,160.);
+TF1 *H = new TF1("H","(300./139.)*(180*exp(-((x-125)^2)/(18)))",110.,160.);
+TF1 *fitf = new TF1("fitf","[1]*bk+[0]*H",110.,160.);
+fitf->SetParameter(1,1);
+fitf->SetParameter(0,0.0);
+TH1F bRV("Background Random Variable","events",50,110.,160.);
+//For 13 TeV, Gaussian events 1354;Background events 15414
+//For 14 TeV, Gaussian events 1354;Background events 16479
+int nev = (300./139.)*15414.;
+for(int i=0;i<nev;i++) {bRV.Fill(fitf->GetRandom());}
+//bRV.Fit("fitf","","",110.,160.);
+bRV.Fit("fitf","R");
+Double_t p0 = fitf->GetParameter(0);
+Double_t p1 = fitf->GetParameter(1);
+Double_t e0 = fitf->GetParError(0);
+Double_t e1 = fitf->GetParError(1);
+HiggsPar.Fill(p0);
+BackPar.Fill(p1);
+HiggsErr.Fill(e0);
+BackErr.Fill(e1);
+bRV.Reset("ICESM");
+//bRV.Draw();
+//fitf->Draw("same");
+//cout << e0<<endl;}
+}
+fitf->Draw();
+}
